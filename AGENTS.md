@@ -105,6 +105,12 @@ Personal release precheck:
 scripts/check-release-ready.sh vX.Y.Z-han.YYYYMMDD.N
 ```
 
+Local service smoke test:
+
+```bash
+scripts/smoke-local-test.sh
+```
+
 The build script runs dependency install/get, lint, tests, and build steps unless `--no-lint` or `--no-test` is passed. Use those flags only when there is a clear reason and report it.
 
 Some exchange-rate tests skip third-party API checks in CI unless `BUILD_PIPELINE=1` and `CHECK_3RD_API=1` are set. `SKIP_TESTS` can be used by the build scripts to pass Go's `-skip` pattern.
@@ -148,6 +154,7 @@ The prepared local test config uses:
 ```
 
 The local seed account is `localtest` / `localtest123`, with runtime data under `.local-test/`.
+Run `scripts/smoke-local-test.sh` after bootstrap or backend changes to verify the local server reaches `/healthz.json`.
 
 ## Code Style
 

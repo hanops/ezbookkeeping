@@ -41,6 +41,16 @@ git tag v1.5.1-han.20260528.1
 
 Use the upstream/base app version for `X.Y.Z`, the build date for `YYYYMMDD`, and increment `N` for multiple builds on the same day.
 
+Before tagging, run:
+
+```bash
+scripts/check-release-ready.sh vX.Y.Z-han.YYYYMMDD.N
+./scripts/bootstrap-local-test.sh
+scripts/smoke-local-test.sh
+```
+
+Create release notes from `docs/release-notes/TEMPLATE.md` and clearly mark whether the NAS deployment is image-only.
+
 ## Upstream PRs
 
 When a change in `dev` is worth proposing upstream, create a temporary PR branch:

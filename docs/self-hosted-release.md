@@ -21,6 +21,8 @@ docker buildx build --platform linux/amd64 -t hanops/ezbookkeeping:v1.5.1-han.20
 The precheck verifies the current branch, tag format, duplicate tag state, clean working tree, disabled upstream push URL, and Docker buildx availability.
 On a machine without Docker, use `--skip-docker` only for the non-Docker parts of the precheck.
 
+Use `docs/release-notes/TEMPLATE.md` for each personal release. The release note must explicitly say whether the deployment is image-only and whether `ezbookkeeping.ini`, database settings, volumes, ports, or secrets changed.
+
 ## Before Switching NAS
 
 Back up the current production state:
