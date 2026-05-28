@@ -157,6 +157,10 @@ ezbookkeeping
 .env
 **/.env
 
+# Local isolated test environment
+.local-test/
+.venv/
+
 # Other directories
 /data/
 /storage/

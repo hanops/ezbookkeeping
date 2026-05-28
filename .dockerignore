@@ -1,0 +1,27 @@
+.git/
+.github/
+
+# Local development and test state
+.local-test/
+.venv/
+.env
+**/.env
+
+# Dependency and build outputs
+node_modules/
+dist/
+package/
+ezbookkeeping
+*.tar.gz
+
+# Runtime data
+data/
+log/
+storage/
+
+# Local editor and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
