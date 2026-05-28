@@ -141,6 +141,21 @@ node_modules/
 # Node.js Build Target
 dist/
 
+# Frontend build artifacts in public/
+public/css/
+public/js/
+public/fonts/
+public/index.html
+public/desktop.html
+public/mobile.html
+public/manifest.json
+public/sw.js
+public/img/layers-*.png
+public/img/marker-icon-*.png
+
+# Test results
+test-results/
+
 # Visual Studio Code
 .vscode/
 *.code-workspace
