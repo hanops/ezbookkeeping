@@ -33,6 +33,7 @@ import ApplicationLockPage from '@/views/mobile/ApplicationLockPage.vue';
 import ExchangeRatesListPage from '@/views/mobile/exchangerates/ListPage.vue';
 import ExchangeRatesUpdatePage from '@/views/mobile/exchangerates/UpdatePage.vue';
 import AboutPage from '@/views/mobile/AboutPage.vue';
+import QuickAddPage from '@/views/mobile/QuickAddPage.vue';
 
 import UserProfilePage from '@/views/mobile/users/UserProfilePage.vue';
 import DataManagementPage from '@/views/mobile/users/DataManagementPage.vue';
@@ -169,6 +170,11 @@ const routes: Router.RouteParameters[] = [
     {
         path: '/transaction/add',
         async: asyncResolve(TransactionEditPage),
+        beforeEnter: [checkLogin]
+    },
+    {
+        path: '/quick-add',
+        async: asyncResolve(QuickAddPage),
         beforeEnter: [checkLogin]
     },
     {

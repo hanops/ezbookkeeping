@@ -13,6 +13,11 @@ type RecognizedReceiptImageResponse struct {
 	Comment              string          `json:"comment,omitempty"`
 }
 
+// RecognizeTransactionTextRequest represents all parameters of transaction text recognition request
+type RecognizeTransactionTextRequest struct {
+	Text string `json:"text" binding:"required,notBlank"`
+}
+
 // RecognizedReceiptImageResult represents the result of recognized receipt image
 type RecognizedReceiptImageResult struct {
 	Type                   string   `json:"type,omitempty" jsonschema:"enum=income,enum=expense,enum=transfer" jsonschema_description:"Transaction type (income, expense, transfer)"`

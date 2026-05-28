@@ -845,6 +845,14 @@ export default {
             cancelableUuid: cancelableUuid
         } as ApiRequestConfig);
     },
+    recognizeTransactionText: ({ text, cancelableUuid }: { text: string, cancelableUuid?: string }): ApiResponsePromise<RecognizedReceiptImageResponse> => {
+        return axios.post<ApiResponse<RecognizedReceiptImageResponse>>('v1/llm/transactions/recognize_transaction_text.json', {
+            text: text
+        }, {
+            timeout: DEFAULT_LLM_API_TIMEOUT,
+            cancelableUuid: cancelableUuid
+        } as ApiRequestConfig);
+    },
     getLatestExchangeRates: (param: { ignoreError?: boolean }): ApiResponsePromise<LatestExchangeRateResponse> => {
         return axios.get<ApiResponse<LatestExchangeRateResponse>>('v1/exchange_rates/latest.json', {
             ignoreError: !!param.ignoreError,

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"reflect"
+	"regexp"
 	"strings"
 	"time"
 
@@ -17,6 +19,16 @@ import (
 	"github.com/mayswind/ezbookkeeping/pkg/settings"
 	"github.com/mayswind/ezbookkeeping/pkg/templates"
 	"github.com/mayswind/ezbookkeeping/pkg/utils"
+)
+
+const maxTransactionRecognitionTextLength = 4000
+
+var (
+	transactionTextAmountPatterns = []*regexp.Regexp{
+		regexp.MustCompile(`(?i)(?:人民币|RMB|CNY|¥|￥|金额|消费|支出|收入|支付|付款|转账|到账|收款|扣款)[^\d+\-]{0,12}([+\-]?\d+(?:,\d{3})*(?:\.\d{1,2})?)`),
+		regexp.MustCompile(`([+\-]?\d+(?:,\d{3})*(?:\.\d{1,2})?)[^\d]{0,8}(?:元|RMB|CNY)`),
+	}
+	transactionTextLongDateTimePattern = regexp.MustCompile(`(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})日?\s*(\d{1,2})[:：](\d{1,2})(?:[:：](\d{1,2}))?`)
 )
 
 // LargeLanguageModelsApi represents large language models api
@@ -241,6 +253,174 @@ func (a *LargeLanguageModelsApi) RecognizeReceiptImageHandler(c *core.WebContext
 	return a.parseRecognizedReceiptImageResponse(c, uid, clientTimezone, result, accountMap, expenseCategoryMap, incomeCategoryMap, transferCategoryMap, tagMap)
 }
 
+// RecognizeTransactionTextHandler returns the recognized transaction text result
+func (a *LargeLanguageModelsApi) RecognizeTransactionTextHandler(c *core.WebContext) (any, *errs.Error) {
+	var request models.RecognizeTransactionTextRequest
+	err := c.ShouldBindJSON(&request)
+
+	if err != nil {
+		log.Warnf(c, "[large_language_models.RecognizeTransactionTextHandler] parse request failed, because %s", err.Error())
+		return nil, errs.ErrNoTransactionText
+	}
+
+	transactionText := strings.TrimSpace(request.Text)
+
+	if len(transactionText) < 1 {
+		return nil, errs.ErrTransactionTextIsEmpty
+	}
+
+	if len([]rune(transactionText)) > maxTransactionRecognitionTextLength {
+		return nil, errs.ErrExceedMaxTransactionTextSize
+	}
+
+	clientTimezone, err := c.GetClientTimezone()
+
+	if err != nil {
+		log.Warnf(c, "[large_language_models.RecognizeTransactionTextHandler] cannot get client timezone, because %s", err.Error())
+		return nil, errs.ErrClientTimezoneOffsetInvalid
+	}
+
+	uid := c.GetCurrentUid()
+	user, err := a.users.GetUserById(c, uid)
+
+	if err != nil {
+		if !errs.IsCustomError(err) {
+			log.Warnf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to get user for user \"uid:%d\", because %s", uid, err.Error())
+		}
+
+		return false, errs.ErrUserNotFound
+	}
+
+	if user.FeatureRestriction.Contains(core.USER_FEATURE_RESTRICTION_TYPE_CREATE_TRANSACTION_FROM_AI_IMAGE_RECOGNITION) {
+		return false, errs.ErrNotPermittedToPerformThisAction
+	}
+
+	accounts, err := a.accounts.GetAllAccountsByUid(c, uid)
+
+	if err != nil {
+		log.Errorf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to get all accounts for user \"uid:%d\", because %s", uid, err.Error())
+		return nil, errs.Or(err, errs.ErrOperationFailed)
+	}
+
+	accountMap := a.accounts.GetVisibleAccountNameMapByList(accounts)
+	accountNames := make([]string, 0, len(accounts))
+
+	for i := 0; i < len(accounts); i++ {
+		if accounts[i].Hidden || accounts[i].Type == models.ACCOUNT_TYPE_MULTI_SUB_ACCOUNTS {
+			continue
+		}
+
+		accountNames = append(accountNames, accounts[i].Name)
+	}
+
+	categories, err := a.transactionCategories.GetAllCategoriesByUid(c, uid, 0, -1)
+
+	if err != nil {
+		log.Errorf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to get categories for user \"uid:%d\", because %s", uid, err.Error())
+		return nil, errs.Or(err, errs.ErrOperationFailed)
+	}
+
+	incomeCategoryMap := make(map[string]*models.TransactionCategory)
+	incomeCategoryNames := make([]string, 0)
+
+	expenseCategoryMap := make(map[string]*models.TransactionCategory)
+	expenseCategoryNames := make([]string, 0)
+
+	transferCategoryMap := make(map[string]*models.TransactionCategory)
+	transferCategoryNames := make([]string, 0)
+
+	for i := 0; i < len(categories); i++ {
+		category := categories[i]
+
+		if category.Hidden || category.ParentCategoryId == models.LevelOneTransactionCategoryParentId {
+			continue
+		}
+
+		if category.Type == models.CATEGORY_TYPE_INCOME {
+			incomeCategoryMap[category.Name] = category
+			incomeCategoryNames = append(incomeCategoryNames, category.Name)
+		} else if category.Type == models.CATEGORY_TYPE_EXPENSE {
+			expenseCategoryMap[category.Name] = category
+			expenseCategoryNames = append(expenseCategoryNames, category.Name)
+		} else if category.Type == models.CATEGORY_TYPE_TRANSFER {
+			transferCategoryMap[category.Name] = category
+			transferCategoryNames = append(transferCategoryNames, category.Name)
+		}
+	}
+
+	tags, err := a.transactionTags.GetAllTagsByUid(c, uid)
+
+	if err != nil {
+		log.Errorf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to get tags for user \"uid:%d\", because %s", uid, err.Error())
+		return nil, errs.Or(err, errs.ErrOperationFailed)
+	}
+
+	tagMap := a.transactionTags.GetVisibleTagNameMapByList(tags)
+	tagNames := make([]string, 0, len(tags))
+
+	for i := 0; i < len(tags); i++ {
+		if tags[i].Hidden {
+			continue
+		}
+
+		tagNames = append(tagNames, tags[i].Name)
+	}
+
+	if a.CurrentConfig().ReceiptImageRecognitionLLMConfig != nil && a.CurrentConfig().ReceiptImageRecognitionLLMConfig.LLMProvider != "" && a.CurrentConfig().TransactionFromAIImageRecognition {
+		systemPrompt, err := templates.GetTemplate(templates.SYSTEM_PROMPT_TRANSACTION_TEXT_RECOGNITION)
+
+		if err != nil {
+			log.Errorf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to get system prompt template for user \"uid:%d\", because %s", uid, err.Error())
+			return nil, errs.Or(err, errs.ErrOperationFailed)
+		}
+
+		systemPromptParams := map[string]any{
+			"CurrentDateTime":          utils.FormatUnixTimeToLongDateTime(time.Now().Unix(), clientTimezone),
+			"AllExpenseCategoryNames":  strings.Join(expenseCategoryNames, "\n"),
+			"AllIncomeCategoryNames":   strings.Join(incomeCategoryNames, "\n"),
+			"AllTransferCategoryNames": strings.Join(transferCategoryNames, "\n"),
+			"AllAccountNames":          strings.Join(accountNames, "\n"),
+			"AllTagNames":              strings.Join(tagNames, "\n"),
+		}
+
+		var bodyBuffer bytes.Buffer
+		err = systemPrompt.Execute(&bodyBuffer, systemPromptParams)
+
+		if err != nil {
+			log.Errorf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to get final system prompt from template for user \"uid:%d\", because %s", uid, err.Error())
+			return nil, errs.Or(err, errs.ErrOperationFailed)
+		}
+
+		llmRequest := &data.LargeLanguageModelRequest{
+			Stream:                 false,
+			SystemPrompt:           strings.ReplaceAll(bodyBuffer.String(), "\r\n", "\n"),
+			UserPrompt:             []byte(transactionText),
+			UserPromptType:         data.LARGE_LANGUAGE_MODEL_REQUEST_PROMPT_TYPE_TEXT,
+			ResponseJsonObjectType: reflect.TypeOf(models.RecognizedReceiptImageResult{}),
+		}
+
+		llmResponse, err := llm.Container.GetJsonResponseByReceiptImageRecognitionModel(c, c.GetCurrentUid(), a.CurrentConfig(), llmRequest)
+
+		if err == nil && llmResponse != nil && len(llmResponse.Content) > 0 && !strings.HasPrefix(llmResponse.Content, "{}") {
+			var result *models.RecognizedReceiptImageResult
+
+			if err := json.Unmarshal([]byte(llmResponse.Content), &result); err == nil {
+				recognizedResponse, customErr := a.parseRecognizedReceiptImageResponse(c, uid, clientTimezone, result, accountMap, expenseCategoryMap, incomeCategoryMap, transferCategoryMap, tagMap)
+
+				if customErr == nil {
+					return recognizedResponse, nil
+				}
+			} else {
+				log.Warnf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to unmarshal recognized transaction text result from llm response \"%s\" for user \"uid:%d\", because %s", llmResponse.Content, uid, err.Error())
+			}
+		} else if err != nil {
+			log.Warnf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to get llm response for user \"uid:%d\", because %s", uid, err.Error())
+		}
+	}
+
+	return a.parseTransactionTextByRules(c, clientTimezone, transactionText)
+}
+
 func (a *LargeLanguageModelsApi) parseRecognizedReceiptImageResponse(c *core.WebContext, uid int64, clientTimezone *time.Location, recognizedResult *models.RecognizedReceiptImageResult, accountMap map[string]*models.Account, expenseCategoryMap map[string]*models.TransactionCategory, incomeCategoryMap map[string]*models.TransactionCategory, transferCategoryMap map[string]*models.TransactionCategory, tagMap map[string]*models.TransactionTag) (*models.RecognizedReceiptImageResponse, *errs.Error) {
 	recognizedReceiptImageResponse := &models.RecognizedReceiptImageResponse{
 		Type: models.TRANSACTION_TYPE_EXPENSE,
@@ -357,6 +537,64 @@ func (a *LargeLanguageModelsApi) parseRecognizedReceiptImageResponse(c *core.Web
 	}
 
 	return recognizedReceiptImageResponse, nil
+}
+
+func (a *LargeLanguageModelsApi) parseTransactionTextByRules(c *core.WebContext, clientTimezone *time.Location, transactionText string) (*models.RecognizedReceiptImageResponse, *errs.Error) {
+	result := &models.RecognizedReceiptImageResponse{
+		Type:    models.TRANSACTION_TYPE_EXPENSE,
+		Comment: transactionText,
+	}
+
+	for i := 0; i < len(transactionTextAmountPatterns); i++ {
+		matches := transactionTextAmountPatterns[i].FindStringSubmatch(transactionText)
+
+		if len(matches) < 2 {
+			continue
+		}
+
+		amountText := strings.ReplaceAll(matches[1], ",", "")
+		amount, err := utils.ParseAmount(amountText)
+
+		if err == nil && amount > 0 {
+			result.SourceAmount = amount
+			break
+		}
+	}
+
+	if result.SourceAmount < 1 {
+		return nil, errs.ErrNoTransactionInformationInText
+	}
+
+	if strings.Contains(transactionText, "收入") || strings.Contains(transactionText, "收款") || strings.Contains(transactionText, "到账") || strings.Contains(transactionText, "入账") {
+		result.Type = models.TRANSACTION_TYPE_INCOME
+	}
+
+	if matches := transactionTextLongDateTimePattern.FindStringSubmatch(transactionText); len(matches) >= 6 {
+		second := "00"
+
+		if len(matches) > 6 && matches[6] != "" {
+			second = matches[6]
+		}
+
+		longDateTime := matches[1] + "-" + a.getTwoDigit(matches[2]) + "-" + a.getTwoDigit(matches[3]) + " " + a.getTwoDigit(matches[4]) + ":" + a.getTwoDigit(matches[5]) + ":" + a.getTwoDigit(second)
+		timestamp, err := utils.ParseFromLongDateTimeInTimeZone(longDateTime, clientTimezone)
+
+		if err == nil {
+			result.Time = timestamp.Unix()
+		} else {
+			log.Warnf(c, "[large_language_models.parseTransactionTextByRules] fallback parsed time \"%s\" is invalid, because %s", longDateTime, err.Error())
+		}
+	}
+
+	return result, nil
+}
+
+func (a *LargeLanguageModelsApi) getTwoDigit(value string) string {
+	if len(value) >= 2 {
+		return value
+	}
+
+	return "0" + value
 }
 
 func (a *LargeLanguageModelsApi) getLongDateTime(dateTime string) string {

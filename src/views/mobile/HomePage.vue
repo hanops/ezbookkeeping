@@ -198,6 +198,13 @@
                         <f7-icon f7="wand_stars"></f7-icon>
                     </template>
                 </f7-list-item>
+                <f7-list-item key="ClipboardQuickAdd" no-chevron popover-close
+                              :title="tt('Import from Clipboard')"
+                              :link="'/quick-add?source=clipboard'">
+                    <template #media>
+                        <f7-icon f7="doc_plaintext"></f7-icon>
+                    </template>
+                </f7-list-item>
                 <f7-list-item popover-close :key="template.id" :title="template.name"
                               :link="'/transaction/add?templateId=' + template.id"
                               v-for="template in allTransactionTemplates">
@@ -236,6 +243,7 @@ import type { RecognizedReceiptImageResponse } from '@/models/large_language_mod
 
 import { isUserLogined, isUserUnlocked } from '@/lib/userstate.ts';
 import { getShareCacheImageBlob } from '@/lib/cache.ts';
+import { getTransactionAddUrlFromRecognizedResult } from '@/lib/quick_transaction.ts';
 import { isTransactionFromAIImageRecognitionEnabled } from '@/lib/server_settings.ts';
 
 type AIImageRecognitionSheetType = InstanceType<typeof AIImageRecognitionSheet>;
@@ -272,9 +280,7 @@ const allTransactionTemplates = computed<TransactionTemplate[]>(() => {
 });
 
 function openTransactionTemplatePopover(): void {
-    if (isTransactionFromAIImageRecognitionEnabled() || (allTransactionTemplates.value && allTransactionTemplates.value.length)) {
-        showTransactionTemplatePopover.value = true;
-    }
+    showTransactionTemplatePopover.value = true;
 }
 
 function init(): void {
@@ -327,47 +333,7 @@ function reload(done?: () => void): void {
 }
 
 function onReceiptRecognitionChanged(result: RecognizedReceiptImageResponse): void {
-    const params: string[] = [];
-
-    if (result.type) {
-        params.push(`type=${result.type}`);
-    }
-
-    if (result.time) {
-        params.push(`time=${result.time}`);
-    }
-
-    if (result.categoryId) {
-        params.push(`categoryId=${result.categoryId}`);
-    }
-
-    if (result.sourceAccountId) {
-        params.push(`accountId=${result.sourceAccountId}`);
-    }
-
-    if (result.destinationAccountId) {
-        params.push(`destinationAccountId=${result.destinationAccountId}`);
-    }
-
-    if (result.sourceAmount) {
-        params.push(`amount=${result.sourceAmount}`);
-    }
-
-    if (result.destinationAmount) {
-        params.push(`destinationAmount=${result.destinationAmount}`);
-    }
-
-    if (result.tagIds) {
-        params.push(`tagIds=${result.tagIds.join(',')}`);
-    }
-
-    if (result.comment) {
-        params.push(`comment=${encodeURIComponent(result.comment)}`);
-    }
-
-    params.push(`noTransactionDraft=true`);
-
-    props.f7router.navigate(`/transaction/add?${params.join('&')}`);
+    props.f7router.navigate(getTransactionAddUrlFromRecognizedResult(result));
 }
 
 function onPageAfterIn(): void {

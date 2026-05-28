@@ -463,6 +463,8 @@ func startWebServer(c *core.CliContext) error {
 			apiV1Route.POST("/insights/explorers/delete.json", bindApi(api.InsightsExplorers.InsightsExplorerDeleteHandler))
 
 			// Large Language Models
+			apiV1Route.POST("/llm/transactions/recognize_transaction_text.json", bindApi(api.LargeLanguageModels.RecognizeTransactionTextHandler))
+
 			if config.ReceiptImageRecognitionLLMConfig != nil && config.ReceiptImageRecognitionLLMConfig.LLMProvider != "" {
 				if config.TransactionFromAIImageRecognition {
 					apiV1Route.POST("/llm/transactions/recognize_receipt_image.json", bindApi(api.LargeLanguageModels.RecognizeReceiptImageHandler))

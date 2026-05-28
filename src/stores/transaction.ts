@@ -1458,6 +1458,36 @@ export const useTransactionsStore = defineStore('transactions', () => {
         });
     }
 
+    function recognizeTransactionText({ text, cancelableUuid }: { text: string, cancelableUuid?: string }): Promise<RecognizedReceiptImageResponse> {
+        return new Promise((resolve, reject) => {
+            services.recognizeTransactionText({ text, cancelableUuid }).then(response => {
+                const data = response.data;
+
+                if (!data || !data.success || !data.result) {
+                    reject({ message: 'Unable to recognize transaction text' });
+                    return;
+                }
+
+                resolve(data.result);
+            }).catch(error => {
+                if (error.canceled) {
+                    reject(error);
+                    return;
+                }
+
+                logger.error('failed to recognize transaction text', error);
+
+                if (error.response && error.response.data && error.response.data.errorMessage) {
+                    reject({ error: error.response.data });
+                } else if (!error.processed) {
+                    reject({ message: 'Unable to recognize transaction text' });
+                } else {
+                    reject(error);
+                }
+            });
+        });
+    }
+
     function cancelRecognizeReceiptImage(cancelableUuid: string): void {
         services.cancelRequest(cancelableUuid);
     }
@@ -1683,6 +1713,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         deleteTransaction,
         batchDeleteTransactions,
         recognizeReceiptImage,
+        recognizeTransactionText,
         cancelRecognizeReceiptImage,
         parseImportCustomFile,
         parseImportTransaction,
