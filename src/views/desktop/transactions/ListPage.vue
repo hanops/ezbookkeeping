@@ -70,6 +70,11 @@
                                                                      :prepend-icon="mdiMagicStaff"
                                                                      v-if="isTransactionFromAIImageRecognitionEnabled()"
                                                                      @click="addByRecognizingImage"></v-list-item>
+                                                        <v-list-item key="TextRecognition"
+                                                                     :title="tt('Read Clipboard and Recognize')"
+                                                                     :prepend-icon="mdiClipboardTextOutline"
+                                                                     v-if="isTransactionFromAIImageRecognitionEnabled()"
+                                                                     @click="addByRecognizingText"></v-list-item>
                                                         <v-list-item :key="template.id"
                                                                      :title="template.name"
                                                                      :prepend-icon="mdiTextBoxOutline"
@@ -669,6 +674,7 @@
 
     <edit-dialog ref="editDialog" :type="TransactionEditPageType.Transaction" />
     <a-i-image-recognition-dialog ref="aiImageRecognitionDialog" />
+    <text-recognition-dialog ref="textRecognitionDialog" />
     <import-dialog ref="importDialog" :persistent="true" />
 
     <v-dialog width="800" v-model="showFilterAccountDialog">
@@ -697,6 +703,7 @@ import ConfirmDialog from '@/components/desktop/ConfirmDialog.vue';
 import SnackBar from '@/components/desktop/SnackBar.vue';
 import EditDialog from './list/dialogs/EditDialog.vue';
 import AIImageRecognitionDialog from './list/dialogs/AIImageRecognitionDialog.vue';
+import TextRecognitionDialog from './list/dialogs/TextRecognitionDialog.vue';
 import ImportDialog from './import/ImportDialog.vue';
 import AccountFilterSettingsCard from '@/views/desktop/common/cards/AccountFilterSettingsCard.vue';
 import CategoryFilterSettingsCard from '@/views/desktop/common/cards/CategoryFilterSettingsCard.vue';
@@ -787,6 +794,7 @@ import {
     mdiArrowRight,
     mdiPound,
     mdiMagicStaff,
+    mdiClipboardTextOutline,
     mdiTextBoxOutline,
     mdiTextBoxEditOutline
 } from '@mdi/js';
@@ -810,6 +818,7 @@ type ConfirmDialogType = InstanceType<typeof ConfirmDialog>;
 type SnackBarType = InstanceType<typeof SnackBar>;
 type EditDialogType = InstanceType<typeof EditDialog>;
 type AIImageRecognitionDialogType = InstanceType<typeof AIImageRecognitionDialog>;
+type TextRecognitionDialogType = InstanceType<typeof TextRecognitionDialog>;
 type ImportDialogType = InstanceType<typeof ImportDialog>;
 
 interface TransactionListDisplayTotalAmount {
@@ -901,6 +910,7 @@ const confirmDialog = useTemplateRef<ConfirmDialogType>('confirmDialog');
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
 const editDialog = useTemplateRef<EditDialogType>('editDialog');
 const aiImageRecognitionDialog = useTemplateRef<AIImageRecognitionDialogType>('aiImageRecognitionDialog');
+const textRecognitionDialog = useTemplateRef<TextRecognitionDialogType>('textRecognitionDialog');
 const importDialog = useTemplateRef<ImportDialogType>('importDialog');
 
 const activeTab = ref<string>('transactionPage');
@@ -1641,6 +1651,33 @@ function add(template?: TransactionTemplate): void {
 
 function addByRecognizingImage(): void {
     aiImageRecognitionDialog.value?.open().then(result => {
+        editDialog.value?.open({
+            time: result.time,
+            type: result.type,
+            categoryId: result.categoryId,
+            accountId: result.sourceAccountId,
+            destinationAccountId: result.destinationAccountId,
+            amount: result.sourceAmount,
+            destinationAmount: result.destinationAmount,
+            tagIds: result.tagIds ? result.tagIds.join(',') : undefined,
+            comment: result.comment,
+            noTransactionDraft: true
+        }).then(result => {
+            if (result && result.message) {
+                snackbar.value?.showMessage(result.message);
+            }
+
+            reload(false, false);
+        }).catch(error => {
+            if (error) {
+                snackbar.value?.showError(error);
+            }
+        });
+    });
+}
+
+function addByRecognizingText(): void {
+    textRecognitionDialog.value?.open().then(result => {
         editDialog.value?.open({
             time: result.time,
             type: result.type,
