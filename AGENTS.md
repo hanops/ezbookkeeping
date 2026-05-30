@@ -6,6 +6,8 @@ Guidance for AI agents working in this repository.
 
 ezBookkeeping is a self-hosted personal finance application. The backend is Go, the frontend is Vue 3 with TypeScript, Vite, Vuetify for desktop UI, and Framework7 for mobile UI. The app also exposes API/MCP tooling for account, transaction, tag, category, and exchange-rate operations.
 
+**Development progress**: See `docs/PROGRESS.md` for current status, completed features, planned work, and common tasks.
+
 Important entry points:
 
 - `ezbookkeeping.go`: CLI entry point, wired through `urfave/cli/v3`.
