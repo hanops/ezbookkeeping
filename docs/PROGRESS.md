@@ -1,12 +1,12 @@
 # Development Progress
 
-Last updated: 2026-05-30
+Last updated: 2026-06-03
 
 ## Current State
 
 - **Branch**: `dev`
-- **Latest release**: `v1.5.1-han.20260530.1`
-- **Upstream sync**: up to date (2026-05-30)
+- **Latest release**: `v1.5.1-han.20260603.1`
+- **Upstream sync**: up to date (2026-06-03, merged upstream/main with 1.6.0 code bump)
 
 ## Completed Features
 
