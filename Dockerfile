@@ -28,6 +28,7 @@ ENV RELEASE_BUILD=$RELEASE_BUILD
 ENV BUILD_PIPELINE=$BUILD_PIPELINE
 ENV BUILD_UNIXTIME=$BUILD_UNIXTIME
 ENV BUILD_DATE=$BUILD_DATE
+ENV NODE_OPTIONS=--max-old-space-size=4096
 WORKDIR /go/src/github.com/mayswind/ezbookkeeping
 COPY . .
 RUN docker/frontend-build-pre-setup.sh
