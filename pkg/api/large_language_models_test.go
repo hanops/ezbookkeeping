@@ -101,3 +101,89 @@ func TestParseTransactionTextByRulesWithSecondPattern(t *testing.T) {
 		t.Fatalf("expected source amount 8860, got %d", result.SourceAmount)
 	}
 }
+
+func TestParseTransactionTextByRulesEmptyText(t *testing.T) {
+	api := &LargeLanguageModelsApi{}
+	_, err := api.parseTransactionTextByRules(nil, time.Local, "")
+
+	if err != errs.ErrNoTransactionInformationInText {
+		t.Fatalf("expected ErrNoTransactionInformationInText, got %v", err)
+	}
+}
+
+func TestParseTransactionTextByRulesTransferKeywords(t *testing.T) {
+	api := &LargeLanguageModelsApi{}
+	result, err := api.parseTransactionTextByRules(nil, time.Local, "您尾号5678账户于2026年05月28日 09:15转账支出200.00元")
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if result.Type != models.TRANSACTION_TYPE_EXPENSE {
+		t.Fatalf("expected expense type for transfer支出, got %d", result.Type)
+	}
+
+	if result.SourceAmount != 20000 {
+		t.Fatalf("expected source amount 20000, got %d", result.SourceAmount)
+	}
+}
+
+func TestParseTransactionTextByRulesIncomeKeywords(t *testing.T) {
+	keywords := []string{"收入", "收款", "到账", "入账"}
+
+	for _, keyword := range keywords {
+		api := &LargeLanguageModelsApi{}
+		result, err := api.parseTransactionTextByRules(nil, time.Local, keyword+"人民币50.00元")
+
+		if err != nil {
+			t.Fatalf("expected no error for keyword %q, got %v", keyword, err)
+		}
+
+		if result.Type != models.TRANSACTION_TYPE_INCOME {
+			t.Fatalf("expected income type for keyword %q, got %d", keyword, result.Type)
+		}
+	}
+}
+
+func TestParseTransactionTextByRulesAmountRMB(t *testing.T) {
+	api := &LargeLanguageModelsApi{}
+	result, err := api.parseTransactionTextByRules(nil, time.Local, "RMB123.45已消费")
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if result.SourceAmount != 12345 {
+		t.Fatalf("expected source amount 12345, got %d", result.SourceAmount)
+	}
+}
+
+func TestParseTransactionTextByRulesAmountYuan(t *testing.T) {
+	api := &LargeLanguageModelsApi{}
+	result, err := api.parseTransactionTextByRules(nil, time.Local, "消费66.00元")
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if result.SourceAmount != 6600 {
+		t.Fatalf("expected source amount 6600, got %d", result.SourceAmount)
+	}
+}
+
+func TestParseTransactionTextByRulesNoTimeInText(t *testing.T) {
+	api := &LargeLanguageModelsApi{}
+	result, err := api.parseTransactionTextByRules(nil, time.Local, "消费人民币10.00元")
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if result.Time != 0 {
+		t.Fatalf("expected time 0 when no date in text, got %d", result.Time)
+	}
+
+	if result.SourceAmount != 1000 {
+		t.Fatalf("expected source amount 1000, got %d", result.SourceAmount)
+	}
+}

@@ -74,11 +74,11 @@ func (a *LargeLanguageModelsApi) RecognizeReceiptImageHandler(c *core.WebContext
 			log.Warnf(c, "[large_language_models.RecognizeReceiptImageHandler] failed to get user for user \"uid:%d\", because %s", uid, err.Error())
 		}
 
-		return false, errs.ErrUserNotFound
+		return nil, errs.ErrUserNotFound
 	}
 
 	if user.FeatureRestriction.Contains(core.USER_FEATURE_RESTRICTION_TYPE_CREATE_TRANSACTION_FROM_AI_IMAGE_RECOGNITION) {
-		return false, errs.ErrNotPermittedToPerformThisAction
+		return nil, errs.ErrNotPermittedToPerformThisAction
 	}
 
 	form, err := c.MultipartForm()
@@ -288,11 +288,11 @@ func (a *LargeLanguageModelsApi) RecognizeTransactionTextHandler(c *core.WebCont
 			log.Warnf(c, "[large_language_models.RecognizeTransactionTextHandler] failed to get user for user \"uid:%d\", because %s", uid, err.Error())
 		}
 
-		return false, errs.ErrUserNotFound
+		return nil, errs.ErrUserNotFound
 	}
 
 	if user.FeatureRestriction.Contains(core.USER_FEATURE_RESTRICTION_TYPE_CREATE_TRANSACTION_FROM_AI_IMAGE_RECOGNITION) {
-		return false, errs.ErrNotPermittedToPerformThisAction
+		return nil, errs.ErrNotPermittedToPerformThisAction
 	}
 
 	accounts, err := a.accounts.GetAllAccountsByUid(c, uid)
