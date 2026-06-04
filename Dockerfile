@@ -31,8 +31,8 @@ ENV BUILD_DATE=$BUILD_DATE
 ENV NODE_OPTIONS=--max-old-space-size=4096
 WORKDIR /go/src/github.com/mayswind/ezbookkeeping
 COPY . .
-RUN docker/frontend-build-pre-setup.sh
 RUN apk add git
+RUN docker/frontend-build-pre-setup.sh
 RUN ./build.sh frontend
 
 # Package docker image
