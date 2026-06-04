@@ -59,7 +59,7 @@ vX.Y.Z-han.YYYYMMDD.N
 Example:
 
 ```text
-v1.5.1-han.20260528.1
+v1.5.1-han.20260604.1
 ```
 
 Do not maintain a long-running `release` branch unless the project later needs multiple personal release lines.

@@ -36,7 +36,7 @@ Example:
 
 ```bash
 git checkout dev
-git tag v1.5.1-han.20260528.1
+git tag v1.5.1-han.20260604.1
 ```
 
 Use the upstream/base app version for `X.Y.Z`, the build date for `YYYYMMDD`, and increment `N` for multiple builds on the same day.
