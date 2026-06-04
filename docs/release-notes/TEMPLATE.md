@@ -8,31 +8,26 @@
 - Release source branch: `dev`
 - Release commit:
 
-## NAS Deployment
+## Fork Features (vs upstream X.Y.Z)
 
-- Deployment mode: image-only
-- Compose change: replace image tag only
-- `ezbookkeeping.ini` changes: none
-- MySQL/PostgreSQL changes: none
-- Volume/port/secret changes: none
+Cumulative personal additions on top of upstream:
 
-If configuration changes are required, replace `none` with the exact key/value delta and explain why the image-only path is not enough.
+- (list all fork features, update this section with each release)
 
-## Validation
+## Changes Since vX.Y.Z-han.YYYYMMDD.P
 
-- `scripts/check-release-ready.sh vX.Y.Z-han.YYYYMMDD.N`
-- `./scripts/bootstrap-local-test.sh`
-- `scripts/smoke-local-test.sh`
-- `go test ./...`
-- `npm run test`
-- `npm run lint`
-- `docker buildx build --platform linux/amd64 -t hanops/ezbookkeeping:vX.Y.Z-han.YYYYMMDD.N --load .`
-- NAS preflight with database/storage backup copies:
+### Upstream Sync
 
-## Rollback
+Merged `upstream/main` into `dev`. Brief summary of upstream changes.
 
-- Previous official image:
-- Previous personal image, if any:
-- Database backup:
-- Storage backup:
-- Rollback command or NAS Compose note:
+### Features
+
+- (personal features added in this release)
+
+### Fixes
+
+- (personal fixes in this release)
+
+### Docs
+
+- (documentation changes)
