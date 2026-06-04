@@ -12,12 +12,12 @@
         <f7-list strong inset dividers>
             <f7-list-input type="textarea" :placeholder="tt('Enter or paste transaction text here')"
                            :value="textareaText" @input="textareaText = $event.target.value"
-                           :disabled="recognizing" style="height: 160px"></f7-list-input>
+                           :disabled="recognizing" style="min-height: 160px"></f7-list-input>
         </f7-list>
 
         <f7-list strong inset dividers>
             <f7-list-button :class="{ 'disabled': recognizing || !isSupportClipboard }"
-                            :text="tt('Read Clipboard and Recognize')"
+                            :text="tt('Import from Clipboard')"
                             @click="readClipboard"></f7-list-button>
             <f7-list-button :class="{ 'disabled': recognizing || !textareaText.trim() }"
                             :text="tt('Recognize')"
@@ -120,7 +120,6 @@ function readClipboard(): void {
 
     navigator.clipboard.readText().then(text => {
         textareaText.value = text;
-        recognize(text);
     }).catch(error => {
         logger.error('failed to read clipboard text for quick add', error);
         showToast('Unable to read clipboard text');

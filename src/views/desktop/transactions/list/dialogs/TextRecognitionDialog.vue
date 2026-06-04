@@ -20,7 +20,7 @@
             <v-card-text>
                 <div class="w-100 d-flex justify-center flex-wrap mt-sm-1 mt-md-2 gap-4">
                     <v-btn :disabled="recognizing || !isSupportClipboard" @click="readClipboard">
-                        {{ tt('Read Clipboard and Recognize') }}
+                        {{ tt('Import from Clipboard') }}
                         <v-progress-circular indeterminate size="22" class="ms-2" v-if="recognizing"></v-progress-circular>
                     </v-btn>
                     <v-btn :disabled="recognizing || !textareaText.trim()" @click="recognize">
@@ -119,7 +119,6 @@ function readClipboard(): void {
 
     navigator.clipboard.readText().then(text => {
         textareaText.value = text;
-        recognize();
     }).catch(error => {
         logger.error('failed to read clipboard text', error);
         snackbar.value?.showError('Unable to read clipboard text');
