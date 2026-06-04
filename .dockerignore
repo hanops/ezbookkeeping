@@ -23,5 +23,9 @@ storage/
 .DS_Store
 .idea/
 .vscode/
+*.code-workspace
 *.swp
 *.swo
+
+# Test results
+test-results/
