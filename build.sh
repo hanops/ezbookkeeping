@@ -262,7 +262,7 @@ build_docker() {
 
     echo "Building docker image \"$docker_tag\" ($RELEASE_TYPE)..."
 
-    docker build . -t "$docker_tag" --build-arg RELEASE_BUILD=$RELEASE
+    docker build . -t "$docker_tag" --build-arg RELEASE_BUILD=$RELEASE --build-arg BUILD_PIPELINE=1 --build-arg CHECK_3RD_API="$CHECK_3RD_API" --build-arg SKIP_TESTS="$SKIP_TESTS"
 }
 
 main() {
