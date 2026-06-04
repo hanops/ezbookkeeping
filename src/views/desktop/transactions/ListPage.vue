@@ -63,7 +63,7 @@
                                             <v-btn class="ms-3" color="default" variant="outlined"
                                                    :disabled="loading || !canAddTransaction" @click="add()">
                                                 {{ tt('Add') }}
-                                                <v-menu activator="parent" max-height="500" :open-on-hover="true" v-if="isTransactionFromAIImageRecognitionEnabled() || (allTransactionTemplates && allTransactionTemplates.length)">
+                                                <v-menu activator="parent" max-height="500" :open-on-hover="true">
                                                     <v-list>
                                                         <v-list-item key="AIImageRecognition"
                                                                      :title="tt('AI Image Recognition')"
@@ -73,7 +73,6 @@
                                                         <v-list-item key="TextRecognition"
                                                                      :title="tt('Read Clipboard and Recognize')"
                                                                      :prepend-icon="mdiClipboardTextOutline"
-                                                                     v-if="isTransactionFromAIImageRecognitionEnabled()"
                                                                      @click="addByRecognizingText"></v-list-item>
                                                         <v-list-item :key="template.id"
                                                                      :title="template.name"

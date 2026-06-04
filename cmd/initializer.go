@@ -216,6 +216,36 @@ func getConfigWithoutSensitiveData(config *settings.Config) *settings.Config {
 		}
 	}
 
+	if clonedConfig.ReceiptTextRecognitionLLMConfig != nil {
+		if clonedConfig.ReceiptTextRecognitionLLMConfig.OpenAIAPIKey != "" {
+			clonedConfig.ReceiptTextRecognitionLLMConfig.OpenAIAPIKey = "****"
+		}
+
+		if clonedConfig.ReceiptTextRecognitionLLMConfig.OpenAICompatibleAPIKey != "" {
+			clonedConfig.ReceiptTextRecognitionLLMConfig.OpenAICompatibleAPIKey = "****"
+		}
+
+		if clonedConfig.ReceiptTextRecognitionLLMConfig.AnthropicCompatibleAPIKey != "" {
+			clonedConfig.ReceiptTextRecognitionLLMConfig.AnthropicCompatibleAPIKey = "****"
+		}
+
+		if clonedConfig.ReceiptTextRecognitionLLMConfig.AnthropicAPIKey != "" {
+			clonedConfig.ReceiptTextRecognitionLLMConfig.AnthropicAPIKey = "****"
+		}
+
+		if clonedConfig.ReceiptTextRecognitionLLMConfig.OpenRouterAPIKey != "" {
+			clonedConfig.ReceiptTextRecognitionLLMConfig.OpenRouterAPIKey = "****"
+		}
+
+		if clonedConfig.ReceiptTextRecognitionLLMConfig.LMStudioToken != "" {
+			clonedConfig.ReceiptTextRecognitionLLMConfig.LMStudioToken = "****"
+		}
+
+		if clonedConfig.ReceiptTextRecognitionLLMConfig.GoogleAIAPIKey != "" {
+			clonedConfig.ReceiptTextRecognitionLLMConfig.GoogleAIAPIKey = "****"
+		}
+	}
+
 	if clonedConfig.OAuth2ClientSecret != "" {
 		clonedConfig.OAuth2ClientSecret = "****"
 	}

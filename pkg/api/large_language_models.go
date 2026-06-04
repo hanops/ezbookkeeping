@@ -291,7 +291,7 @@ func (a *LargeLanguageModelsApi) RecognizeTransactionTextHandler(c *core.WebCont
 		return nil, errs.ErrUserNotFound
 	}
 
-	if user.FeatureRestriction.Contains(core.USER_FEATURE_RESTRICTION_TYPE_CREATE_TRANSACTION_FROM_AI_IMAGE_RECOGNITION) {
+	if user.FeatureRestriction.Contains(core.USER_FEATURE_RESTRICTION_TYPE_CREATE_TRANSACTION_FROM_AI_TEXT_RECOGNITION) {
 		return nil, errs.ErrNotPermittedToPerformThisAction
 	}
 
@@ -366,7 +366,7 @@ func (a *LargeLanguageModelsApi) RecognizeTransactionTextHandler(c *core.WebCont
 		tagNames = append(tagNames, tags[i].Name)
 	}
 
-	if a.CurrentConfig().ReceiptImageRecognitionLLMConfig != nil && a.CurrentConfig().ReceiptImageRecognitionLLMConfig.LLMProvider != "" && a.CurrentConfig().TransactionFromAIImageRecognition {
+	if a.isTransactionTextRecognitionLLMEnabled() {
 		systemPrompt, err := templates.GetTemplate(templates.SYSTEM_PROMPT_TRANSACTION_TEXT_RECOGNITION)
 
 		if err != nil {
@@ -399,7 +399,7 @@ func (a *LargeLanguageModelsApi) RecognizeTransactionTextHandler(c *core.WebCont
 			ResponseJsonObjectType: reflect.TypeOf(models.RecognizedReceiptImageResult{}),
 		}
 
-		llmResponse, err := llm.Container.GetJsonResponseByReceiptImageRecognitionModel(c, c.GetCurrentUid(), a.CurrentConfig(), llmRequest)
+		llmResponse, err := llm.Container.GetJsonResponseByReceiptTextRecognitionModel(c, c.GetCurrentUid(), a.CurrentConfig(), llmRequest)
 
 		if err == nil && llmResponse != nil && len(llmResponse.Content) > 0 && !strings.HasPrefix(llmResponse.Content, "{}") {
 			var result *models.RecognizedReceiptImageResult
@@ -611,4 +611,14 @@ func (a *LargeLanguageModelsApi) getLongDateTime(dateTime string) string {
 	}
 
 	return dateTime
+}
+
+func (a *LargeLanguageModelsApi) isTransactionTextRecognitionLLMEnabled() bool {
+	config := a.CurrentConfig()
+
+	if config.ReceiptTextRecognitionLLMConfig != nil && config.ReceiptTextRecognitionLLMConfig.LLMProvider != "" && config.TransactionFromAITextRecognition {
+		return true
+	}
+
+	return false
 }

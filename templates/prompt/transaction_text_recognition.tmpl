@@ -29,6 +29,7 @@ Your task is to extract structured transaction data from text provided by the us
 5. Always return valid JSON.
 6. The current time is {{.CurrentDateTime}}.
 7. Prefer matching account, category, and tag names from the options below exactly.
+8. For the "type" field, determine whether the text describes an expense, income, or transfer. Focus on the primary action that directly represents the transaction itself, and disregard financial terms that appear only in balance, summary, or disclaimer context.
 
 ## Options
 ### Expense categories:

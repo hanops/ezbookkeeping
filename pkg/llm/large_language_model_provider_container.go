@@ -16,6 +16,7 @@ import (
 // LargeLanguageModelProviderContainer contains the current large language model provider
 type LargeLanguageModelProviderContainer struct {
 	receiptImageRecognitionCurrentProvider provider.LargeLanguageModelProvider
+	receiptTextRecognitionCurrentProvider  provider.LargeLanguageModelProvider
 }
 
 // Initialize a large language model provider container singleton instance
@@ -29,6 +30,14 @@ func InitializeLargeLanguageModelProvider(config *settings.Config) error {
 
 	if config.ReceiptImageRecognitionLLMConfig != nil {
 		Container.receiptImageRecognitionCurrentProvider, err = initializeLargeLanguageModelProvider(config.ReceiptImageRecognitionLLMConfig, config.EnableDebugLog)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if config.ReceiptTextRecognitionLLMConfig != nil {
+		Container.receiptTextRecognitionCurrentProvider, err = initializeLargeLanguageModelProvider(config.ReceiptTextRecognitionLLMConfig, config.EnableDebugLog)
 
 		if err != nil {
 			return err
@@ -69,4 +78,13 @@ func (l *LargeLanguageModelProviderContainer) GetJsonResponseByReceiptImageRecog
 	}
 
 	return l.receiptImageRecognitionCurrentProvider.GetJsonResponse(c, uid, currentConfig.ReceiptImageRecognitionLLMConfig, request)
+}
+
+// GetJsonResponseByReceiptTextRecognitionModel returns the json response from the current large language model provider by receipt text recognition model
+func (l *LargeLanguageModelProviderContainer) GetJsonResponseByReceiptTextRecognitionModel(c core.Context, uid int64, currentConfig *settings.Config, request *data.LargeLanguageModelRequest) (*data.LargeLanguageModelTextualResponse, error) {
+	if currentConfig.ReceiptTextRecognitionLLMConfig == nil || Container.receiptTextRecognitionCurrentProvider == nil {
+		return nil, errs.ErrInvalidLLMProvider
+	}
+
+	return l.receiptTextRecognitionCurrentProvider.GetJsonResponse(c, uid, currentConfig.ReceiptTextRecognitionLLMConfig, request)
 }

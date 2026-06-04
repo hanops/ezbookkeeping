@@ -62,6 +62,12 @@ func (a *ServerSettingsApi) ServerSettingsJavascriptHandler(c *core.WebContext) 
 		}
 	}
 
+	if config.ReceiptTextRecognitionLLMConfig != nil && config.ReceiptTextRecognitionLLMConfig.LLMProvider != "" {
+		if config.TransactionFromAITextRecognition {
+			a.appendBooleanSetting(builder, "llmtr", config.TransactionFromAITextRecognition)
+		}
+	}
+
 	if config.LoginPageTips.Enabled {
 		a.appendMultiLanguageTipSetting(builder, "lpt", config.LoginPageTips)
 	}
