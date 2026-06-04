@@ -1,9 +1,9 @@
-# vX.Y.Z-han.YYYYMMDD.N
+# vX.Y.Z-han.N
 
 ## Summary
 
 - Base upstream version:
-- Target image: `hanops/ezbookkeeping:vX.Y.Z-han.YYYYMMDD.N`
+- Target image: `hanops/ezbookkeeping:vX.Y.Z-han.N`
 - Target platform: `linux/amd64`
 - Release source branch: `dev`
 - Release commit:
@@ -14,7 +14,7 @@ Cumulative personal additions on top of upstream:
 
 - (list all fork features, update this section with each release)
 
-## Changes Since vX.Y.Z-han.YYYYMMDD.P
+## Changes Since vX.Y.Z-han.P
 
 ### Upstream Sync
 

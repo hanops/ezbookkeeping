@@ -5,12 +5,12 @@ Last updated: 2026-06-04
 ## Current State
 
 - **Branch**: `dev`
-- **Latest release**: `v1.5.1-han.20260604.1`
+- **Latest release**: `v1.6.0-han.2`
 - **Upstream sync**: up to date (2026-06-03, merged upstream/main with 1.6.0 code bump)
 
 ## Completed Features
 
-- [x] Transaction text recognition — mobile (`v1.5.1-han.20260528.1`) + desktop (`v1.5.1-han.20260530.1`) + locale补全 + UX优化 (`v1.5.1-han.20260604.1`)
+- [x] Transaction text recognition — mobile (`v1.5.1-han.1`) + desktop (`v1.5.1-han.2`) + locale补全 + UX优化 (`v1.6.0-han.2`)
   - 用户可粘贴或从剪贴板读取交易文本，LLM识别后预览确认再保存
   - Key files:
     - Desktop: `src/views/desktop/transactions/list/dialogs/TextRecognitionDialog.vue`, `src/views/desktop/transactions/ListPage.vue`

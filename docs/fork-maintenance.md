@@ -29,22 +29,22 @@ Tag personal releases from `dev` after tests pass.
 Tag format:
 
 ```text
-vX.Y.Z-han.YYYYMMDD.N
+vX.Y.Z-han.N
 ```
 
 Example:
 
 ```bash
 git checkout dev
-git tag v1.5.1-han.20260604.1
+git tag v1.6.0-han.2
 ```
 
-Use the upstream/base app version for `X.Y.Z`, the build date for `YYYYMMDD`, and increment `N` for multiple builds on the same day.
+Use the upstream/base app version for `X.Y.Z` and increment `N` sequentially.
 
 Before tagging, run:
 
 ```bash
-scripts/check-release-ready.sh vX.Y.Z-han.YYYYMMDD.N
+scripts/check-release-ready.sh vX.Y.Z-han.N
 ./scripts/bootstrap-local-test.sh
 scripts/smoke-local-test.sh
 ```

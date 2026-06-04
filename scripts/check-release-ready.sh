@@ -15,10 +15,10 @@ Usage:
     scripts/check-release-ready.sh <tag> [--allow-dirty]
 
 Tag format:
-    vX.Y.Z-han.YYYYMMDD.N
+    vX.Y.Z-han.N
 
 Example:
-    scripts/check-release-ready.sh v1.5.1-han.20260528.1
+    scripts/check-release-ready.sh v1.6.0-han.2
 
 Options:
     --allow-dirty    Permit uncommitted changes. Use only while testing this script.
@@ -71,9 +71,9 @@ if [ "$current_branch" != "$EXPECTED_BRANCH" ]; then
     exit 1
 fi
 
-if ! printf '%s\n' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+-han\.[0-9]{8}\.[0-9]+$'; then
+if ! printf '%s\n' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+-han\.[0-9]+$'; then
     echo "Invalid tag format: $TAG" >&2
-    echo "Expected: vX.Y.Z-han.YYYYMMDD.N" >&2
+    echo "Expected: vX.Y.Z-han.N" >&2
     exit 1
 fi
 

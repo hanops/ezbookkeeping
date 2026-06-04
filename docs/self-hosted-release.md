@@ -8,14 +8,14 @@ The NAS production environment owns its own Docker Compose file, `ezbookkeeping.
 
 - Image name: `hanops/ezbookkeeping`
 - Target platform: `linux/amd64`
-- Tag format: `vX.Y.Z-han.YYYYMMDD.N`
-- Example tag: `v1.5.1-han.20260604.1`
+- Tag format: `vX.Y.Z-han.N`
+- Example tag: `v1.6.0-han.2`
 
 Build example:
 
 ```bash
-scripts/check-release-ready.sh v1.5.1-han.20260604.1
-docker buildx build --platform linux/amd64 -t hanops/ezbookkeeping:v1.5.1-han.20260604.1 --load .
+scripts/check-release-ready.sh v1.6.0-han.2
+docker buildx build --platform linux/amd64 -t hanops/ezbookkeeping:v1.6.0-han.2 --load .
 ```
 
 The precheck verifies the current branch, tag format, duplicate tag state, clean working tree, disabled upstream push URL, and Docker buildx availability.
@@ -73,7 +73,7 @@ Verify:
 For the normal path, only replace the image tag:
 
 ```yaml
-image: hanops/ezbookkeeping:v1.5.1-han.20260604.1
+image: hanops/ezbookkeeping:v1.6.0-han.2
 ```
 
 Keep the existing Compose file structure, `ezbookkeeping.ini`, MySQL connection, volumes, ports, environment variables, and secrets unchanged. Then restart the service with the existing Compose workflow.

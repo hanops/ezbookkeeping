@@ -53,13 +53,13 @@ Temporary branches:
 Personal release tags are created directly from `dev` after validation. Use this format:
 
 ```text
-vX.Y.Z-han.YYYYMMDD.N
+vX.Y.Z-han.N
 ```
 
 Example:
 
 ```text
-v1.5.1-han.20260604.1
+v1.6.0-han.2
 ```
 
 Do not maintain a long-running `release` branch unless the project later needs multiple personal release lines.
@@ -71,7 +71,7 @@ The production NAS has its own Docker Compose file, `ezbookkeeping.ini`, and MyS
 The expected self-hosted upgrade path is image-only:
 
 ```yaml
-image: hanops/ezbookkeeping:vX.Y.Z-han.YYYYMMDD.N
+image: hanops/ezbookkeeping:vX.Y.Z-han.N
 ```
 
 Do not ask the user to edit NAS Compose, `ezbookkeeping.ini`, MySQL settings, volumes, ports, or secrets for a normal fork release. Only require configuration changes when upstream changes its required configuration or when this fork introduces a feature that explicitly needs new configuration. When that happens, document the exact config delta and keep it separate from the image replacement step.
@@ -104,7 +104,7 @@ Project build script:
 Personal release precheck:
 
 ```bash
-scripts/check-release-ready.sh vX.Y.Z-han.YYYYMMDD.N
+scripts/check-release-ready.sh vX.Y.Z-han.N
 ```
 
 Local service smoke test:
